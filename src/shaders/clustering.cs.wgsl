@@ -21,3 +21,9 @@
 //         - Stop adding lights if the maximum number of lights is reached.
 
 //     - Store the number of lights assigned to this cluster.
+
+@compute
+@workgroup_size(16)
+fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
+    return;
+}
