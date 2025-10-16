@@ -21,9 +21,24 @@
 //         - Stop adding lights if the maximum number of lights is reached.
 
 //     - Store the number of lights assigned to this cluster.
+struct Uniforms {
+    canvasX: i32,
+    canvasY: i32,
+    tileGridX: i32,
+    tileGridY: i32
+}
+
+@group(${bindGroup_scene}) @binding(0) var<storage, read_write> computeOutput: array<i32>;
+@group(${bindGroup_scene}) @binding(1) var<uniform> uniforms: Uniforms;
 
 @compute
-@workgroup_size(16)
+@workgroup_size(1)
 fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
+    
+    var output = i32(globalIdx.x);
+    if ((globalIdx.x | 1) == globalIdx.x) {
+        output *= 2;
+    }
+    computeOutput[globalIdx.x] = output;
     return;
 }

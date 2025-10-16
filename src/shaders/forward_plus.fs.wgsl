@@ -15,6 +15,20 @@
 // Multiply the fragment’s diffuse color by the accumulated light contribution.
 // Return the final color, ensuring that the alpha component is set appropriately (typically to 1).
 
+struct Uniforms {
+    canvasX: i32,
+    canvasY: i32,
+    tileGridX: i32,
+    tileGridY: i32
+}
+
+@group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
+@group(${bindGroup_scene}) @binding(2) var<storage, read_write> computeOutput: array<i32>;
+@group(${bindGroup_scene}) @binding(3) var<uniform> uniforms: Uniforms;
+
+@group(${bindGroup_material}) @binding(0) var diffuseTex: texture_2d<f32>;
+@group(${bindGroup_material}) @binding(1) var diffuseTexSampler: sampler;
+
 struct FragmentInput {
     @location(0) pos: vec3f,
     @location(1) nor: vec3f,
@@ -22,7 +36,14 @@ struct FragmentInput {
 }
 
 @fragment
-fn main(in: FragmentInput) -> @location(0) vec4f
+fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4f
 {
-    return vec4(in.pos, 1);
+    let uv = frag_coord.xy / vec2<f32>(f32(uniforms.canvasX), f32(uniforms.canvasY));
+    let tileGridCoord = floor(uv * vec2<f32>(f32(uniforms.tileGridX), f32(uniforms.tileGridY)) );
+    let tileGridCoordId = i32(tileGridCoord.y) * uniforms.tileGridX + i32(tileGridCoord.x);
+    var read = f32(computeOutput[tileGridCoordId]);
+    read /= f32(uniforms.tileGridX * uniforms.tileGridY);
+    return vec4<f32>(vec3<f32>(read), 1.0);
+
+    //return vec4<f32>(uv, 0.0, 1.0);
 }

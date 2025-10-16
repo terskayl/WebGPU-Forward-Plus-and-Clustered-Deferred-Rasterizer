@@ -3,8 +3,10 @@ import { toRadians } from "../math_util";
 import { device, canvas, fovYDegrees, aspectRatio } from "../renderer";
 
 class CameraUniforms {
-    readonly buffer = new ArrayBuffer(16 * 4);
+                            // 4x4 mat * sizeof(float) + 2 dims * sizeof(int), + 8 to pad to multiple of 16
+    readonly buffer = new ArrayBuffer(16 * 4 + 2 * 4                            + 8);
     private readonly floatView = new Float32Array(this.buffer);
+    private readonly intView = new Int32Array(this.buffer);
 
     set viewProjMat(mat: Float32Array) {
         // TODO-1.1: set the first 16 elements of `this.floatView` to the input `mat`
@@ -12,6 +14,10 @@ class CameraUniforms {
     }
 
     // TODO-2: add extra functions to set values needed for light clustering here
+    set pixelDims(dims: Int32Array) {
+        this.intView.set(dims, 16);
+    }
+
 }
 
 export class Camera {
@@ -40,6 +46,7 @@ export class Camera {
         //
         // note that you can add more variables (e.g. inverse proj matrix) to this buffer in later parts of the assignment
         this.uniformsBuffer = device.createBuffer({
+            label: "camera uniform buffer",
             size: this.uniforms.buffer.byteLength,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
