@@ -18,8 +18,8 @@
 struct Uniforms {
     canvasX: i32,
     canvasY: i32,
-    tileGridX: i32,
-    tileGridY: i32
+    pixelDimX: i32,
+    pixelDimY: i32
 }
 
 @group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
@@ -38,12 +38,24 @@ struct FragmentInput {
 @fragment
 fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4f
 {
-    let uv = frag_coord.xy / vec2<f32>(f32(uniforms.canvasX), f32(uniforms.canvasY));
-    let tileGridCoord = floor(uv * vec2<f32>(f32(uniforms.tileGridX), f32(uniforms.tileGridY)) );
-    let tileGridCoordId = i32(tileGridCoord.y) * uniforms.tileGridX + i32(tileGridCoord.x);
+
+    let tileGridDimX = (uniforms.canvasX + uniforms.pixelDimX - 1) / uniforms.pixelDimX;
+    let tileGridDimY = (uniforms.canvasY + uniforms.pixelDimY - 1) / uniforms.pixelDimY;
+
+
+    //let uv = frag_coord.xy / vec2<f32>(f32(uniforms.canvasX), f32(uniforms.canvasY));
+    //let tileGridCoord = floor(uv * vec2<f32>(f32(tileGridDimX), f32(tileGridDimY)) );
+
+    let tileGridCoord = floor(frag_coord.xy / vec2<f32>(f32(uniforms.pixelDimX), f32(uniforms.pixelDimX)));
+
+    //let x = i32(frag_coord.x) /uniforms.pixelDimX;
+    //return vec4<f32>(0.1 * f32(x) , 0.0, 0.0, 1.0);
+
+    let tileGridCoordId = i32(tileGridCoord.y) * tileGridDimX + i32(tileGridCoord.x);
     var read = f32(computeOutput[tileGridCoordId]);
-    read /= f32(uniforms.tileGridX * uniforms.tileGridY);
+    read /= f32(tileGridDimX * tileGridDimY);
     return vec4<f32>(vec3<f32>(read), 1.0);
 
     //return vec4<f32>(uv, 0.0, 1.0);
+
 }

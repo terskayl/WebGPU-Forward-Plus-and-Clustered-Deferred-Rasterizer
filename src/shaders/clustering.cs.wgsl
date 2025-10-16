@@ -24,8 +24,8 @@
 struct Uniforms {
     canvasX: i32,
     canvasY: i32,
-    tileGridX: i32,
-    tileGridY: i32
+    pixelDimX: i32,
+    pixelDimY: i32
 }
 
 @group(${bindGroup_scene}) @binding(0) var<storage, read_write> computeOutput: array<i32>;
