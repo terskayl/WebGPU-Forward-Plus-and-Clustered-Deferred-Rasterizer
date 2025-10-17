@@ -25,7 +25,8 @@ struct Uniforms {
     canvasX: i32,
     canvasY: i32,
     pixelDimX: i32,
-    pixelDimY: i32
+    pixelDimY: i32,
+    depthSlices: i32
 }
 
 @group(${bindGroup_scene}) @binding(0) var<storage, read_write> computeOutput: ClusterSet;
@@ -59,9 +60,14 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let UVYMax = f32(SSYMax) / f32(uniforms.canvasY);
     let NDCYMax = 1.0 - 2.0 * UVYMax;
 
-    // TODO, split depth actually
-    let depthMin = 3.0 * f32(globalIdx.z);
-    let depthMax = depthMin + 3.0;
+    // Linear Depth Spliting
+    //let depthLayerWidth = (cameraUniforms.farPlane - cameraUniforms.nearPlane) / f32(cameraUniforms.farPlane);
+    //let depthMin = depthLayerWidth * f32(globalIdx.z);
+    //let depthMax = depthMin + depthLayerWidth;
+
+    // Log Depth Spliting
+    let depthMin = cameraUniforms.nearPlane * pow(cameraUniforms.farPlane / cameraUniforms.nearPlane, f32(globalIdx.z) / f32(uniforms.depthSlices));
+    let depthMax = cameraUniforms.nearPlane * pow(cameraUniforms.farPlane / cameraUniforms.nearPlane, f32(globalIdx.z + 1u) / f32(uniforms.depthSlices));
 
 
     let tanHalfFov = tan(cameraUniforms.fov * 0.5);

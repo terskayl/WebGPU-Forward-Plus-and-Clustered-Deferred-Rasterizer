@@ -3,8 +3,8 @@ import { toRadians } from "../math_util";
 import { device, canvas, fovYDegrees, aspectRatio } from "../renderer";
 
 class CameraUniforms {
-                        // 4x4 mat * sizeof(float) * 2 of them + 2 * sizeof(float) + 8 for padding
-    readonly buffer = new ArrayBuffer(16 * 4 * 2                + 2 * 4 + 8);
+                        // 4x4 mat * sizeof(float) * 2 of them + 4 * sizeof(float) + 0 padding
+    readonly buffer = new ArrayBuffer(16 * 4 * 2                + 4 * 4);
     private readonly floatView = new Float32Array(this.buffer);
 
     set viewProjMat(mat: Float32Array) {
@@ -23,6 +23,14 @@ class CameraUniforms {
 
     set fov(fov: Float32Array) {
         this.floatView.set(fov, 33);
+    }
+
+    set nearPlane(nearPlane: Float32Array) {
+        this.floatView.set(nearPlane, 34);
+    }
+
+    set farPlane(farPlane: Float32Array) {
+        this.floatView.set(farPlane, 35);
     }
     
 
@@ -155,6 +163,8 @@ export class Camera {
         this.uniforms.viewMat = viewMat;
         this.uniforms.aspectRatio = new Float32Array([aspectRatio]);
         this.uniforms.fov = new Float32Array([toRadians(fovYDegrees)])
+        this.uniforms.nearPlane = new Float32Array([Camera.nearPlane]);
+        this.uniforms.farPlane = new Float32Array([20]); // TODO: Hard code far plane for scenes here.
 
         // TODO-1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`

@@ -19,7 +19,8 @@ struct Uniforms {
     canvasX: i32,
     canvasY: i32,
     pixelDimX: i32,
-    pixelDimY: i32
+    pixelDimY: i32,
+    depthSlices: i32
 }
 
 @group(${bindGroup_scene}) @binding(0) var<uniform> cameraUniforms: CameraUniforms;
@@ -57,7 +58,16 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
     let tileGridCoordId = i32(tileGridCoord.y) * tileGridDimX + i32(tileGridCoord.x);
     let depth = (cameraUniforms.viewMat * vec4<f32>(in.pos, 1.0)).z;
 
-    var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridDimX * tileGridDimY * i32(floor(-depth * 0.333)))]; // LINK DEPTH, replace with proper func
+    //var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridDimX * tileGridDimY * i32(floor(-depth * 1.0)))]; // LINK DEPTH, replace with proper func
+    let depthLayerWidth = (cameraUniforms.farPlane - cameraUniforms.nearPlane) / f32(uniforms.depthSlices);
+    
+    // With linear depth
+    //var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridDimX * tileGridDimY * i32(floor(-depth / depthLayerWidth)))]; // LINK DEPTH, replace with proper func
+    // With logaritmic depth
+    let depthInd = clamp(f32(uniforms.depthSlices) * log(-depth / cameraUniforms.nearPlane) / log(cameraUniforms.farPlane / cameraUniforms.nearPlane),0.0, f32(uniforms.depthSlices - 1));
+    var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridDimX * tileGridDimY * i32(floor(depthInd)))]; // LINK DEPTH, replace with proper func
+    
+
     var read = f32(cluster.lightIndices[0]);
     var readInt = cluster.lightIndices[0];
     var color = vec3<f32>(0.0, 0.0, 0.0);

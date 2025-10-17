@@ -37,6 +37,8 @@ export class Lights {
     computePipeline: GPUComputePipeline;
     computePipelineLayout: GPUPipelineLayout;
     
+    depthSlices: number = 64;
+
     // How many pixels per cluster in screen space?
     pixelDimX: number = 128;
     pixelDimY: number = 128;
@@ -122,21 +124,23 @@ export class Lights {
 
         // TODO-2: initialize layouts, pipelines, textures, etc. needed for light clustering here
 
-        const additionalUniformsBufferHost = new Int32Array(4);
+        const additionalUniformsBufferHost = new Int32Array(5);
         // Canvas dim, and grid dim, in one vec4
         this.additionalUniformsBuffer = device.createBuffer({
             label: "vertex additional uniforms buffer",
-            size: 4 * 4, // 4 * sizeof(int)
+            size: 5 * 4 + 12, // 5 * sizeof(int) + 12 padding
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         })
         additionalUniformsBufferHost[0] = this.canvasWidth;
         additionalUniformsBufferHost[1] = this.canvasHeight;
         additionalUniformsBufferHost[2] = this.pixelDimX;
         additionalUniformsBufferHost[3] = this.pixelDimY;
+        additionalUniformsBufferHost[4] = this.depthSlices;
+        
         device.queue.writeBuffer(this.additionalUniformsBuffer, 0, additionalUniformsBufferHost);
 
                                                         // per grid cell, have d depth, and keep 32 closest lights
-        const computeOutputBufferHost = new Int32Array(this.tileGridDimX * this.tileGridDimY * 32 * 10) // LINK DEPTH
+        const computeOutputBufferHost = new Int32Array(this.tileGridDimX * this.tileGridDimY * 32 * this.depthSlices)
         this.computeOutputBuffer = device.createBuffer({
             label: "compute output buffer",
             size: computeOutputBufferHost.byteLength,
@@ -175,7 +179,6 @@ export class Lights {
         this.computePipelineLayout = device.createPipelineLayout({
             label: "forward+ compute pipeline layout",
             bindGroupLayouts: [
-                // TODO (aajiang): Place data here.
                 this.computeOutputBindGroupLayout
             ]
         });
@@ -213,8 +216,7 @@ export class Lights {
         // TODO-2: run the light clustering compute pass(es) here
         // implementing clustering here allows for reusing the code in both Forward+ and Clustered Deferred
 
-        // TOOD CONNECT DEPTH
-        let computeOutputBufferHost = new Float32Array(this.tileGridDimX * this.tileGridDimY * 10 * 32); 
+        let computeOutputBufferHost = new Float32Array(this.tileGridDimX * this.tileGridDimY * this.depthSlices * 32); 
         device.queue.writeBuffer(this.computeOutputBuffer, 0, computeOutputBufferHost);
 
         let computeOutputBindGroup = device.createBindGroup({
@@ -245,7 +247,7 @@ export class Lights {
         computePass.setPipeline(this.computePipeline);
         computePass.setBindGroup(0, computeOutputBindGroup);
         // One per cluster
-        computePass.dispatchWorkgroups(this.tileGridDimX, this.tileGridDimY, 10); // LINK DEPTH
+        computePass.dispatchWorkgroups(this.tileGridDimX, this.tileGridDimY, this.depthSlices);
         computePass.end();
     }
 
