@@ -28,17 +28,25 @@ struct Uniforms {
     pixelDimY: i32
 }
 
-@group(${bindGroup_scene}) @binding(0) var<storage, read_write> computeOutput: array<i32>;
+@group(${bindGroup_scene}) @binding(0) var<storage, read_write> computeOutput: ClusterSet;
 @group(${bindGroup_scene}) @binding(1) var<uniform> uniforms: Uniforms;
+@group(${bindGroup_scene}) @binding(2) var<uniform> cameraUniforms: CameraUniforms;
+@group(${bindGroup_scene}) @binding(3) var<storage, read> lights: LightSet;
 
 @compute
 @workgroup_size(1)
 fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
+
+    let tileGridDimX = (uniforms.canvasX + uniforms.pixelDimX - 1) / uniforms.pixelDimX;
+    let tileGridDimY = (uniforms.canvasY + uniforms.pixelDimY - 1) / uniforms.pixelDimY;
     
-    var output = i32(globalIdx.x);
-    if ((globalIdx.x | 1) == globalIdx.x) {
-        output *= 2;
+    var output = 1;//i32(globalIdx.x * globalIdx.y);
+    if (((globalIdx.x + u32(tileGridDimX) * globalIdx.y) | 1) == (globalIdx.x + u32(tileGridDimX) * globalIdx.y)) {
+        output = 2;
     }
-    computeOutput[globalIdx.x] = output;
+    // LINK DEPTH
+    computeOutput.clusters[u32(tileGridDimY) * u32(tileGridDimX) * globalIdx.z + u32(tileGridDimX) * globalIdx.y + globalIdx.x].lightIndices[0] = output;
+    
+
     return;
 }

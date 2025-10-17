@@ -23,7 +23,7 @@ struct Uniforms {
 }
 
 @group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
-@group(${bindGroup_scene}) @binding(2) var<storage, read_write> computeOutput: array<i32>;
+@group(${bindGroup_scene}) @binding(2) var<storage, read_write> computeOutput: ClusterSet;
 @group(${bindGroup_scene}) @binding(3) var<uniform> uniforms: Uniforms;
 
 @group(${bindGroup_material}) @binding(0) var diffuseTex: texture_2d<f32>;
@@ -52,9 +52,21 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
     //return vec4<f32>(0.1 * f32(x) , 0.0, 0.0, 1.0);
 
     let tileGridCoordId = i32(tileGridCoord.y) * tileGridDimX + i32(tileGridCoord.x);
-    var read = f32(computeOutput[tileGridCoordId]);
-    read /= f32(tileGridDimX * tileGridDimY);
-    return vec4<f32>(vec3<f32>(read), 1.0);
+    var cluster = computeOutput.clusters[tileGridCoordId]; // LINK DEPTH
+    var read = cluster.lightIndices[0];
+    
+    if (read == 0) {
+        return vec4<f32>(1.0, 0.0, 1.0, 1.0);
+    } else if (read == 1) {
+        return vec4<f32>(1.0, 0.0, 0.0, 1.0);
+    } else if (read == 2) {
+        return vec4<f32>(0.0, 0.0, 1.0, 1.0);
+    }
+
+    return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+
+    //read /= f32(tileGridDimX * tileGridDimY);
+    //return vec4<f32>(vec3<f32>(read), 1.0);
 
     //return vec4<f32>(uv, 0.0, 1.0);
 

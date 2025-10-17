@@ -3,20 +3,28 @@ import { toRadians } from "../math_util";
 import { device, canvas, fovYDegrees, aspectRatio } from "../renderer";
 
 class CameraUniforms {
-                            // 4x4 mat * sizeof(float) + 2 dims * sizeof(int), + 8 to pad to multiple of 16
-    readonly buffer = new ArrayBuffer(16 * 4 + 2 * 4                            + 8);
+                        // 4x4 mat * sizeof(float) * 2 of them + 2 * sizeof(float) + 8 for padding
+    readonly buffer = new ArrayBuffer(16 * 4 * 2                + 2 * 4 + 8);
     private readonly floatView = new Float32Array(this.buffer);
-    private readonly intView = new Int32Array(this.buffer);
 
     set viewProjMat(mat: Float32Array) {
         // TODO-1.1: set the first 16 elements of `this.floatView` to the input `mat`
         this.floatView.set(mat, 0);
     }
-
+    
     // TODO-2: add extra functions to set values needed for light clustering here
-    set pixelDims(dims: Int32Array) {
-        this.intView.set(dims, 16);
+    set viewMat(mat: Float32Array) {
+        this.floatView.set(mat, 16);
     }
+
+    set aspectRatio(ar: Float32Array) {
+        this.floatView.set(ar, 32);
+    }
+
+    set fov(fov: Float32Array) {
+        this.floatView.set(fov, 33);
+    }
+    
 
 }
 
@@ -143,6 +151,9 @@ export class Camera {
         // TODO-1.1: set `this.uniforms.viewProjMat` to the newly calculated view proj mat
         this.uniforms.viewProjMat = viewProjMat;
         // TODO-2: write to extra buffers needed for light clustering here
+        this.uniforms.viewMat = viewMat;
+        this.uniforms.aspectRatio = new Float32Array([aspectRatio]);
+        this.uniforms.fov = new Float32Array([toRadians(fovYDegrees)])
 
         // TODO-1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`

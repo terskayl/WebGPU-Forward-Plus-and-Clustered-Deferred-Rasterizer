@@ -135,7 +135,8 @@ export class Lights {
         additionalUniformsBufferHost[3] = this.pixelDimY;
         device.queue.writeBuffer(this.additionalUniformsBuffer, 0, additionalUniformsBufferHost);
 
-        const computeOutputBufferHost = new Int32Array(this.tileGridDimX * this.tileGridDimY)
+                                                        // per grid cell, have d depth, and keep 32 closest lights
+        const computeOutputBufferHost = new Int32Array(this.tileGridDimX * this.tileGridDimY * 32 * 10) // LINK DEPTH
         this.computeOutputBuffer = device.createBuffer({
             label: "compute output buffer",
             size: computeOutputBufferHost.byteLength,
@@ -144,7 +145,7 @@ export class Lights {
         // Init to all zeros
         device.queue.writeBuffer(this.computeOutputBuffer, 0, computeOutputBufferHost);
 
-        
+
         this.computeOutputBindGroupLayout = device.createBindGroupLayout({
             label: "compute output bind group layout",
             entries: [
@@ -157,6 +158,16 @@ export class Lights {
                     binding: 1,
                     visibility: GPUShaderStage.COMPUTE,
                     buffer: { type: "uniform" }
+                },
+                {
+                    binding: 2,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: { type: "uniform" }
+                }, 
+                {
+                    binding: 3,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: { type: "read-only-storage" }
                 }
             ]
         })
@@ -213,6 +224,14 @@ export class Lights {
                 {
                     binding: 1,
                     resource: { buffer: this.additionalUniformsBuffer }
+                },
+                {
+                    binding: 2,
+                    resource: { buffer: this.camera.uniformsBuffer }
+                },
+                {
+                    binding: 3,
+                    resource: { buffer: this.lightSetStorageBuffer }
                 }
             ]
         });
@@ -221,7 +240,8 @@ export class Lights {
 
         computePass.setPipeline(this.computePipeline);
         computePass.setBindGroup(0, computeOutputBindGroup);
-        computePass.dispatchWorkgroups(this.tileGridDimX * this.tileGridDimY, 1, 1);
+        // One per cluster
+        computePass.dispatchWorkgroups(this.tileGridDimX, this.tileGridDimY, 10); // LINK DEPTH
         computePass.end();
     }
 

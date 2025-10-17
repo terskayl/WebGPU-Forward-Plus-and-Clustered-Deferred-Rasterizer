@@ -22,9 +22,6 @@ export class ForwardPlusRenderer extends renderer.Renderer {
         
         // TODO-2: initialize layouts, pipelines, textures, etc. needed for Forward+ here
 
-        this.camera.uniforms.pixelDims = new Int32Array([renderer.canvas.width, renderer.canvas.height]);
-        // TODO: refactor this away.
-
         this.sceneUniformsBindGroupLayout = renderer.device.createBindGroupLayout({
             label: "forward+ scene uniforms bind group layout",
             entries: [
