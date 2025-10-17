@@ -213,6 +213,10 @@ export class Lights {
         // TODO-2: run the light clustering compute pass(es) here
         // implementing clustering here allows for reusing the code in both Forward+ and Clustered Deferred
 
+        // TOOD CONNECT DEPTH
+        let computeOutputBufferHost = new Float32Array(this.tileGridDimX * this.tileGridDimY * 10 * 32); 
+        device.queue.writeBuffer(this.computeOutputBuffer, 0, computeOutputBufferHost);
+
         let computeOutputBindGroup = device.createBindGroup({
             label: "compute output bind group",
             layout: this.computeOutputBindGroupLayout,

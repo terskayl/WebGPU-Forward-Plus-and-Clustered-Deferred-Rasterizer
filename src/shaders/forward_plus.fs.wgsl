@@ -22,6 +22,7 @@ struct Uniforms {
     pixelDimY: i32
 }
 
+@group(${bindGroup_scene}) @binding(0) var<uniform> cameraUniforms: CameraUniforms;
 @group(${bindGroup_scene}) @binding(1) var<storage, read> lightSet: LightSet;
 @group(${bindGroup_scene}) @binding(2) var<storage, read_write> computeOutput: ClusterSet;
 @group(${bindGroup_scene}) @binding(3) var<uniform> uniforms: Uniforms;
@@ -46,28 +47,50 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
     //let uv = frag_coord.xy / vec2<f32>(f32(uniforms.canvasX), f32(uniforms.canvasY));
     //let tileGridCoord = floor(uv * vec2<f32>(f32(tileGridDimX), f32(tileGridDimY)) );
 
+// TODO: HMMM JUST STRETCHING OCCURS
+
     let tileGridCoord = floor(frag_coord.xy / vec2<f32>(f32(uniforms.pixelDimX), f32(uniforms.pixelDimX)));
 
     //let x = i32(frag_coord.x) /uniforms.pixelDimX;
     //return vec4<f32>(0.1 * f32(x) , 0.0, 0.0, 1.0);
 
     let tileGridCoordId = i32(tileGridCoord.y) * tileGridDimX + i32(tileGridCoord.x);
-    var cluster = computeOutput.clusters[tileGridCoordId]; // LINK DEPTH
-    var read = cluster.lightIndices[0];
+    let depth = (cameraUniforms.viewMat * vec4<f32>(in.pos, 1.0)).z;
+
+    var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridCoord.x * tileGridCoord.y * 0)]; // LINK DEPTH, replace with proper func
+    var read = f32(cluster.lightIndices[0]);
+    var readInt = cluster.lightIndices[0];
+    var color = vec3<f32>(0.0, 0.0, 0.0);
+    if (readInt > 0) {
+        color = lightSet.lights[readInt - 1].color;
+    }
     
-    if (read == 0) {
-        return vec4<f32>(1.0, 0.0, 1.0, 1.0);
-    } else if (read == 1) {
-        return vec4<f32>(1.0, 0.0, 0.0, 1.0);
-    } else if (read == 2) {
-        return vec4<f32>(0.0, 0.0, 1.0, 1.0);
+    
+    //return vec4<f32>(color, 1.0);
+    
+    let diffuseColor = textureSample(diffuseTex, diffuseTexSampler, in.uv);
+    if (diffuseColor.a < 0.5f) {
+        discard;
     }
 
-    return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+    var totalLightContrib = vec3f(0, 0, 0);
+            // TODO: SIZE OF BUFFER?
+    for (var i = 0u; i < 32; i += 1) {
+        let lightIdx = cluster.lightIndices[i];
+        if (lightIdx > 0) {
+            let light = lightSet.lights[lightIdx - 1];
+            totalLightContrib += calculateLightContrib(light, in.pos, normalize(in.nor));
+        }
+    }
 
-    //read /= f32(tileGridDimX * tileGridDimY);
-    //return vec4<f32>(vec3<f32>(read), 1.0);
+    var finalColor = diffuseColor.rgb * totalLightContrib;
 
-    //return vec4<f32>(uv, 0.0, 1.0);
+    //if (depth < -10 || depth > -7) {
+    //    finalColor = vec3<f32>(1.0, 0.0, 0.0);
+    //}
 
+
+    return vec4(finalColor, 1);
+
+    //return vec4<f32>( vec3<f32>(f32(readInt) / 10.0), 1.0);
 }

@@ -90,6 +90,7 @@ export class Camera {
             this.pitch = -89;
         }
 
+        // default foward is x vector?
         const front = mat4.create();
         front[0] = Math.cos(toRadians(this.yaw)) * Math.cos(toRadians(this.pitch));
         front[1] = Math.sin(toRadians(this.pitch));
