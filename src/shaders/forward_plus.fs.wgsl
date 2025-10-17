@@ -40,8 +40,8 @@ struct FragmentInput {
 fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @location(0) vec4f
 {
 
-    let tileGridDimX = (uniforms.canvasX + uniforms.pixelDimX - 1) / uniforms.pixelDimX;
-    let tileGridDimY = (uniforms.canvasY + uniforms.pixelDimY - 1) / uniforms.pixelDimY;
+    let tileGridDimX: i32 = (uniforms.canvasX + uniforms.pixelDimX - 1) / uniforms.pixelDimX;
+    let tileGridDimY: i32 = (uniforms.canvasY + uniforms.pixelDimY - 1) / uniforms.pixelDimY;
 
 
     //let uv = frag_coord.xy / vec2<f32>(f32(uniforms.canvasX), f32(uniforms.canvasY));
@@ -57,7 +57,7 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
     let tileGridCoordId = i32(tileGridCoord.y) * tileGridDimX + i32(tileGridCoord.x);
     let depth = (cameraUniforms.viewMat * vec4<f32>(in.pos, 1.0)).z;
 
-    var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridCoord.x * tileGridCoord.y * 0)]; // LINK DEPTH, replace with proper func
+    var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridDimX * tileGridDimY * i32(floor(-depth * 0.333)))]; // LINK DEPTH, replace with proper func
     var read = f32(cluster.lightIndices[0]);
     var readInt = cluster.lightIndices[0];
     var color = vec3<f32>(0.0, 0.0, 0.0);
@@ -92,5 +92,5 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
 
     return vec4(finalColor, 1);
 
-    //return vec4<f32>( vec3<f32>(f32(readInt) / 10.0), 1.0);
+    //return vec4<f32>( vec3<f32>(f32(readInt) / f32(tileGridDimX * tileGridDimY * 10)), 1.0);
 }

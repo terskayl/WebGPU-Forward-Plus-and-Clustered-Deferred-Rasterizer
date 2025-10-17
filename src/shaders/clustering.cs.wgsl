@@ -55,13 +55,13 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let NDCXMax = 2.0 * UVXMax - 1.0;
 
     let UVYMin = f32(SSYMin) / f32(uniforms.canvasY);
-    let NDCYMin = 2.0 * UVYMin - 1.0;
+    let NDCYMin = 1.0 - 2.0 * UVYMin;
     let UVYMax = f32(SSYMax) / f32(uniforms.canvasY);
-    let NDCYMax = 2.0 * UVYMax - 1.0;
+    let NDCYMax = 1.0 - 2.0 * UVYMax;
 
     // TODO, split depth actually
-    let depthMin = 1.0 * f32(globalIdx.z);
-    let depthMax = depthMin + 1.0;
+    let depthMin = 3.0 * f32(globalIdx.z);
+    let depthMax = depthMin + 3.0;
 
 
     let tanHalfFov = tan(cameraUniforms.fov * 0.5);
@@ -93,6 +93,7 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
             break;
         }
     }
+    
     //computeOutput.clusters[u32(tileGridDimY) * u32(tileGridDimX) * globalIdx.z + u32(tileGridDimX) * globalIdx.y + globalIdx.x].lightIndices[0] = i32(u32(tileGridDimY) * u32(tileGridDimX) * globalIdx.z + u32(tileGridDimX) * globalIdx.y + globalIdx.x);
     
     //computeOutput.clusters[u32(tileGridDimY) * u32(tileGridDimX) * globalIdx.z + u32(tileGridDimX) * globalIdx.y + globalIdx.x].lightIndices[0] = sum;
