@@ -12,13 +12,14 @@ WebGL Forward+ and Clustered Deferred Shading
 [![](img/thumb.png)](http://terskayl.github.io/WebGPU-Forward-Plus-and-Clustered-Deferred-Rasterizer)
 
 ### Demo Video/GIF
-<video src="img/Screen%20Recording%202025-10-18%20000719.mp4" width="900" height="400" controls></video>
+
+[![](img/DeferredMoreLights.gif)](https://youtu.be/ErUgfd5Gv4U)
 
 ### Overview
 
 This repo contains a demonstration of a variety of different rasterization methods in WebGPU. It contains implementations for a Naive Forward Renderer, a Clustered Forward+ Renderer, and a Clustered Deferred Renderer. The implementations were based on [this paper](https://www.cse.chalmers.se/~uffe/clustered_shading_preprint.pdf) by Ola Olsson, Markus Billeter, and Ulf Assarsson.
 
-|Method | Demo| 
+|Method | Demo|
 |-|-|
 |Naive |![](img/Naive.gif)|
  | Clustered Forward+|![](img/Forward+.gif)|
