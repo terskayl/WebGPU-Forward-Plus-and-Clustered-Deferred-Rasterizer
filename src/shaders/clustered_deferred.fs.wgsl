@@ -44,10 +44,11 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
     
     // With logaritmic depth
     let depthInd = clamp(f32(uniforms.depthSlices) * log(-depth / cameraUniforms.nearPlane) / log(cameraUniforms.farPlane / cameraUniforms.nearPlane),0.0, f32(uniforms.depthSlices - 1));
-    var cluster = computeOutput.clusters[tileGridCoordId + i32(tileGridDimX * tileGridDimY * i32(floor(depthInd)))]; // LINK DEPTH, replace with proper func
+    let clusterId = tileGridCoordId + i32(tileGridDimX * tileGridDimY * i32(floor(depthInd)));
+    //let cluster = computeOutput.clusters[clusterId]; // LINK DEPTH, replace with proper func
     
-    var read = f32(cluster.lightIndices[0]);
-    var readInt = cluster.lightIndices[0];
+    var read = f32(computeOutput.clusters[clusterId].lightIndices[0]);
+    var readInt = computeOutput.clusters[clusterId].lightIndices[0];
 
 
     // We must re-calculate position
@@ -69,7 +70,7 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
     var totalLightContrib = vec3f(0, 0, 0);
             // TODO: SIZE OF BUFFER?
     for (var i = 0u; i < 128; i += 1) {
-        let lightIdx = cluster.lightIndices[i];
+        let lightIdx = computeOutput.clusters[clusterId].lightIndices[i];
         if (lightIdx > 0) {
             var light = lightSet.lights[lightIdx - 1];
             totalLightContrib += calculateLightContrib(light, pos.xyz, normalize(nor.xyz));
@@ -78,7 +79,7 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
         }
     }
 
-    var finalColor = albedoDepth.rgb * (totalLightContrib + 0.1);
+    var finalColor = albedoDepth.rgb * (totalLightContrib);
 
     return vec4(finalColor, 1);
 
