@@ -13,7 +13,7 @@ WebGL Forward+ and Clustered Deferred Shading
 
 ### Demo Video/GIF
 
-[![](img/DeferredMoreLights.gif)]()
+<video src="img/Screen Recording 2025-10-18 000719.mp4" width="900" height="400" controls></video>
 
 ### Overview
 
