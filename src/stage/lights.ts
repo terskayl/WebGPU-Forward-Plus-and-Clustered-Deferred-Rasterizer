@@ -37,7 +37,7 @@ export class Lights {
     computePipeline: GPUComputePipeline;
     computePipelineLayout: GPUPipelineLayout;
     
-    depthSlices: number = 64;
+    depthSlices: number = 32;
 
     // How many pixels per cluster in screen space?
     pixelDimX: number = 128;
@@ -139,8 +139,8 @@ export class Lights {
         
         device.queue.writeBuffer(this.additionalUniformsBuffer, 0, additionalUniformsBufferHost);
 
-                                                        // per grid cell, have d depth, and keep 32 closest lights
-        const computeOutputBufferHost = new Int32Array(this.tileGridDimX * this.tileGridDimY * 32 * this.depthSlices)
+                                                        // per grid cell, have d depth, and keep 128 closest lights
+        const computeOutputBufferHost = new Int32Array(this.tileGridDimX * this.tileGridDimY * 128 * this.depthSlices)
         this.computeOutputBuffer = device.createBuffer({
             label: "compute output buffer",
             size: computeOutputBufferHost.byteLength,
@@ -216,7 +216,7 @@ export class Lights {
         // TODO-2: run the light clustering compute pass(es) here
         // implementing clustering here allows for reusing the code in both Forward+ and Clustered Deferred
 
-        let computeOutputBufferHost = new Float32Array(this.tileGridDimX * this.tileGridDimY * this.depthSlices * 32); 
+        let computeOutputBufferHost = new Float32Array(this.tileGridDimX * this.tileGridDimY * this.depthSlices * 128); 
         device.queue.writeBuffer(this.computeOutputBuffer, 0, computeOutputBufferHost);
 
         let computeOutputBindGroup = device.createBindGroup({
@@ -247,7 +247,7 @@ export class Lights {
         computePass.setPipeline(this.computePipeline);
         computePass.setBindGroup(0, computeOutputBindGroup);
         // One per cluster
-        computePass.dispatchWorkgroups(this.tileGridDimX, this.tileGridDimY, this.depthSlices);
+        computePass.dispatchWorkgroups((this.tileGridDimX), (this.tileGridDimY), this.depthSlices);
         computePass.end();
     }
 

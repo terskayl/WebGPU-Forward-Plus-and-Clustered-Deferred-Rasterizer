@@ -13,7 +13,7 @@ struct LightSet {
 // TODO-2: you may want to create a ClusterSet struct similar to LightSet
 struct Cluster {
     // position derived at runtime from index
-    lightIndices: array<i32, 32>
+    lightIndices: array<i32, 128>
 }
 
 struct ClusterSet {

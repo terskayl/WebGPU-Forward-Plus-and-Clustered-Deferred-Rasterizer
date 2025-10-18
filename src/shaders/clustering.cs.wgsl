@@ -95,7 +95,7 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
             computeOutput.clusters[u32(tileGridDimY) * u32(tileGridDimX) * globalIdx.z + u32(tileGridDimX) * globalIdx.y + globalIdx.x].lightIndices[sum] = i32(i) + 1; // ADD ONE TO ALLOW ZERO TO DENOTE NONE
             sum += 1;
         }
-        if (sum >= 32) {
+        if (sum >= 128) {
             break;
         }
     }

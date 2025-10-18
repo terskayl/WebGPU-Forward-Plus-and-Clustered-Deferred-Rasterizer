@@ -48,8 +48,6 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
     //let uv = frag_coord.xy / vec2<f32>(f32(uniforms.canvasX), f32(uniforms.canvasY));
     //let tileGridCoord = floor(uv * vec2<f32>(f32(tileGridDimX), f32(tileGridDimY)) );
 
-// TODO: HMMM JUST STRETCHING OCCURS
-
     let tileGridCoord = floor(frag_coord.xy / vec2<f32>(f32(uniforms.pixelDimX), f32(uniforms.pixelDimX)));
 
     //let x = i32(frag_coord.x) /uniforms.pixelDimX;
@@ -70,14 +68,7 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
 
     var read = f32(cluster.lightIndices[0]);
     var readInt = cluster.lightIndices[0];
-    var color = vec3<f32>(0.0, 0.0, 0.0);
-    if (readInt > 0) {
-        color = lightSet.lights[readInt - 1].color;
-    }
-    
-    
-    //return vec4<f32>(color, 1.0);
-    
+        
     let diffuseColor = textureSample(diffuseTex, diffuseTexSampler, in.uv);
     if (diffuseColor.a < 0.5f) {
         discard;
@@ -85,11 +76,13 @@ fn main(in: FragmentInput, @builtin(position) frag_coord: vec4<f32>) -> @locatio
 
     var totalLightContrib = vec3f(0, 0, 0);
             // TODO: SIZE OF BUFFER?
-    for (var i = 0u; i < 32; i += 1) {
+    for (var i = 0u; i < 128; i += 1) {
         let lightIdx = cluster.lightIndices[i];
         if (lightIdx > 0) {
             let light = lightSet.lights[lightIdx - 1];
             totalLightContrib += calculateLightContrib(light, in.pos, normalize(in.nor));
+        } else {
+            break;
         }
     }
 
