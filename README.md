@@ -12,8 +12,7 @@ WebGL Forward+ and Clustered Deferred Shading
 [![](img/thumb.png)](http://terskayl.github.io/WebGPU-Forward-Plus-and-Clustered-Deferred-Rasterizer)
 
 ### Demo Video/GIF
-
-<video src="img/Screen Recording 2025-10-18 000719.mp4" width="900" height="400" controls></video>
+<video src="img/Screen%20Recording%202025-10-18%20000719.mp4" width="900" height="400" controls></video>
 
 ### Overview
 
