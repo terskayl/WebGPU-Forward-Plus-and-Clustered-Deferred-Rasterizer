@@ -13,7 +13,7 @@ WebGL Forward+ and Clustered Deferred Shading
 
 ### Demo Video/GIF
 
-[![](img/DeferredMoreLights.gif)](TODO)
+[![](img/DeferredMoreLights.gif)]()
 
 ### Overview
 
